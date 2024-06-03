@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Интерактивная карта железных дорог и маршрутов поездов России</title>
+
+    <!-- <link rel='stylesheet' href='https://unpkg.com/maplibre-gl@4.3.2/dist/maplibre-gl.css' />
+    <script src='https://unpkg.com/maplibre-gl@4.3.2/dist/maplibre-gl.js'></script> -->
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.2.0/dist/leaflet.css" integrity="sha512-M2wvCLH6DSRazYeZRIm1JnYyh22purTM+FDB5CsyxtQJYeKq83arPe5wgbNmcFXGqiSH2XR8dT/fJISVA1r/zQ==" crossorigin=""/>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css"/>
+    <script src="https://unpkg.com/leaflet@1.2.0/dist/leaflet.js" integrity="sha512-lInM/apFSqyy1o6s89K4iQUKg6ppXEgsVxT35HbzUupEVRh2Eu9Wdl4tHj7dZO0s1uvplcYGmt3498TtHq+log==" crossorigin=""></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <!-- <script src="https://unpkg.com/leaflet.vectorgrid/dist/Leaflet.VectorGrid.bundled.js"></script> -->
+    <script src="https://unpkg.com/leaflet-popup/dist/leaflet.popup.js"></script>
+    <!-- <script src="https://unpkg.com/leaflet.vectorgrid@1.3.0/dist/Leaflet.VectorGrid.min.js"></script> -->
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
+     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
+     <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+
+    <style>
+          body, h1, h2, h3, h4, h5, h6, p, div {
+               font-family: Candara, Arial, sans-serif;
+          }
+     </style>
+     <style>
+          #menu {
+               position: absolute;
+               background: #d1e0ff;
+               width: 200px;
+               top: 20px;
+               right: 20px;
+               z-index: 9999;
+               border-radius: 10px;
+               display: flex;
+               flex-direction: column;
+               justify-content: center;
+               align-items: center;
+               padding: 10px;
+          }
+          #map {
+               position: absolute;
+               background: rgb(255, 255, 255);
+               height: inherit;
+               width: inherit;
+               left: 0px;
+               right: 0px;
+               top: 0px;
+               bottom: 0px;
+          }
+          #title {
+               position: absolute;
+               background: rgb(130, 167, 245); 
+               width: 100%;
+               height: 50px;
+               left: 0px;
+               top: 0px;
+               text-align: center;
+               z-index: 9999;
+          }
+          #train-info {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 300px;
+            /* height: fit-content; */
+            max-height: 1000px;
+            background-color: #d1e0ff;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            z-index: 9999;
+            display: flex;
+               flex-direction: column;
+               justify-content: center;
+               align-items: center;
+          }
+          #legend {
+               position: absolute;
+               background: #d1e0ff;
+               width: 200px;
+               bottom: 20px;
+               right: 20px;
+               padding: 10px;
+               border: 1px solid #ccc;
+               border-radius: 5px;
+               z-index: 1000;
+               display: flex;
+               flex-direction: column;
+               justify-content: center;
+               align-items: center;
+          }
+          .legend-item {
+          display: flex;
+          align-items: center;
+          }
+          .legend-icon {
+          width: 20px;
+          height: 20px;
+          margin-right: 5px;
+          }
+          .legend-text {
+          font-size: 14px;
+          }
+        
+          .centered-text-hor {
+               text-align: center;
+          }
+          .centered-text-full {
+               display: flex;
+               align-items: center;
+               justify-content: center;
+               height: 100vh;
+          }
+          .train-button {
+               display: block;
+               width: 100%;
+               margin-bottom: 5px;
+               padding: 10px;
+               background-color: #58a8fd;
+               color: #fff;
+               border: none;
+               border-radius: 5px;
+               cursor: pointer;
+               text-align: center;
+          }
+
+          .train-button:hover {
+               background-color: #007afd;
+          }
+          #search {
+               width: 180px;
+               padding: 5px;
+               margin-bottom: 10px;
+               border-radius: 5px;
+               border: 1px solid #ccc;
+          }
+          #search_results {
+               list-style-type: none;
+               padding: 0;
+               margin: 0;
+               width: 180px;
+               border: 1px solid #ccc;
+               border-top: none;
+               border-radius: 0 0 5px 5px;
+               max-height: 200px;
+               overflow-y: auto;
+               background: white;
+               display: none;
+          }
+          #search_results li {
+               padding: 8px;
+               cursor: pointer;
+          }
+          #search_results li:hover {
+               background-color: #eee;
+          }
+     </style>
+</head>
+
+<body>
+     <!-- <div id="title" class="centered-text-full "><p>Интерактивная карта железных дорог России</p></div> -->
+     <div id="map"></div>
+     <div id="train-info">
+          <h3>Информация о поездах</h3>
+          <div id="train-info-content">
+              Выберите станцию для просмотра информации о поездах
+          </div>
+      </div>
+     <div id="menu">
+          <p>Поиск станции</p>
+          <!-- <button class="get_data_btn" data-endpoint="/data1">Получить данные 1</button> -->
+          <div id="data_display"></div>
+          <input id="search" type="text" placeholder="Введите название станции...">
+          <ul id="search_results"></ul>
+      </div>
+
+      <div id="legend">
+          <h3>Легенда</h3>
+          <div class="legend-item">
+              <img src="/get_icon/stations" alt="Станция" class="legend-icon">
+              <span class="legend-text">Станция</span>
+          </div>
+          <div class="legend-item">
+               <img src="/get_icon/railway" alt="Железные дороги" class="legend-icon">
+              <span class="legend-text">Железные дороги</span>
+          </div>
+          <div class="legend-item">
+               <div>
+                   <div><span>2</span></div>
+               </div>
+               <span class="legend-text">Кластер точек</span>
+           </div>
+      </div>
+
+      <script src="{{ url_for('static', filename='script.js') }}"></script>
+
+</body>
+</html>
